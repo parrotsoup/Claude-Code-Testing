@@ -1,0 +1,22 @@
+{
+  "name": "jpmorgan-pdf-naming",
+  "version": "1.0.0",
+  "description": "Download JP Morgan PDFs and rename them based on first line content",
+  "main": "download-pdfs.js",
+  "scripts": {
+    "download": "node download-pdfs.js",
+    "start": "node download-pdfs.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^21.0.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "keywords": [
+    "jpmorgan",
+    "pdf",
+    "automation",
+    "puppeteer"
+  ],
+  "author": "",
+  "license": "MIT"
+}
