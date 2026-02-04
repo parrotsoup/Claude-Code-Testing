@@ -1,11 +1,13 @@
 {
-  "name": "jpmorgan-pdf-naming",
-  "version": "1.0.0",
-  "description": "Download JP Morgan PDFs and rename them based on first line content",
+  "name": "ir-pdf-downloader",
+  "version": "1.1.0",
+  "description": "Download PDFs from investor relations websites and rename them based on first line content",
   "main": "download-pdfs.js",
   "scripts": {
-    "download": "node download-pdfs.js",
-    "start": "node download-pdfs.js"
+    "start": "node download-pdfs.js",
+    "jpmorgan": "node download-pdfs.js jpmorgan",
+    "globalfoundries": "node download-pdfs.js globalfoundries",
+    "all": "node download-pdfs.js all"
   },
   "dependencies": {
     "puppeteer-core": "^21.0.0",
@@ -13,9 +15,11 @@
   },
   "keywords": [
     "jpmorgan",
+    "globalfoundries",
     "pdf",
     "automation",
-    "puppeteer"
+    "puppeteer",
+    "investor-relations"
   ],
   "author": "",
   "license": "MIT"

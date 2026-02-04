@@ -4,12 +4,24 @@ const path = require('path');
 const { execSync } = require('child_process');
 const pdfParse = require('pdf-parse');
 
+// Available sources
+const SOURCES = {
+  jpmorgan: {
+    name: 'JP Morgan',
+    url: 'https://www.jpmorganchase.com/ir/annual-report',
+    description: 'JP Morgan Chase annual reports',
+  },
+  globalfoundries: {
+    name: 'GlobalFoundries',
+    url: 'https://investors.gf.com/news-releases/presentations',
+    description: 'GlobalFoundries investor presentations',
+  },
+};
+
 // Configuration
 const CONFIG = {
-  // JP Morgan investor relations page with annual reports
-  targetUrl: 'https://www.jpmorganchase.com/ir/annual-report',
   downloadDir: path.join(__dirname, 'downloads'),
-  maxPdfs: 10, // Limit number of PDFs to download
+  maxPdfs: 50, // Limit number of PDFs to download
   timeout: 60000, // 60 second timeout for page loads
 };
 
@@ -135,11 +147,36 @@ function getPdfFiles(directory) {
 }
 
 /**
+ * Print usage information
+ */
+function printUsage() {
+  console.log('PDF Downloader & Renamer');
+  console.log('========================\n');
+  console.log('Usage: node download-pdfs.js [source]\n');
+  console.log('Available sources:');
+  for (const [key, source] of Object.entries(SOURCES)) {
+    console.log(`  ${key.padEnd(20)} - ${source.description}`);
+  }
+  console.log(`  all${' '.repeat(18)} - Download from all sources`);
+  console.log('\nExamples:');
+  console.log('  node download-pdfs.js jpmorgan');
+  console.log('  node download-pdfs.js globalfoundries');
+  console.log('  node download-pdfs.js all');
+}
+
+/**
  * Main function to download and rename PDFs
  */
-async function downloadAndRenamePdfs() {
-  console.log('JP Morgan PDF Downloader & Renamer');
-  console.log('==================================\n');
+async function downloadAndRenamePdfs(sourceKey) {
+  const source = SOURCES[sourceKey];
+  if (!source) {
+    console.error(`Unknown source: ${sourceKey}`);
+    printUsage();
+    process.exit(1);
+  }
+
+  console.log(`${source.name} PDF Downloader & Renamer`);
+  console.log('='.repeat(source.name.length + 24) + '\n');
 
   // Create download directory
   if (!fs.existsSync(CONFIG.downloadDir)) {
@@ -181,10 +218,10 @@ async function downloadAndRenamePdfs() {
     downloadPath: CONFIG.downloadDir,
   });
 
-  console.log(`Navigating to: ${CONFIG.targetUrl}\n`);
+  console.log(`Navigating to: ${source.url}\n`);
 
   try {
-    await page.goto(CONFIG.targetUrl, {
+    await page.goto(source.url, {
       waitUntil: 'networkidle2',
       timeout: CONFIG.timeout
     });
@@ -311,13 +348,33 @@ async function downloadAndRenamePdfs() {
   }
 }
 
-// Run the script
-downloadAndRenamePdfs()
-  .then(() => {
-    console.log('\nDone!');
+// Parse command line arguments and run
+async function main() {
+  const args = process.argv.slice(2);
+
+  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+    printUsage();
     process.exit(0);
-  })
-  .catch(error => {
-    console.error('Fatal error:', error);
-    process.exit(1);
-  });
+  }
+
+  const sourceArg = args[0].toLowerCase();
+
+  if (sourceArg === 'all') {
+    // Run for all sources
+    for (const sourceKey of Object.keys(SOURCES)) {
+      console.log(`\n${'#'.repeat(50)}`);
+      console.log(`# Processing: ${SOURCES[sourceKey].name}`);
+      console.log(`${'#'.repeat(50)}\n`);
+      await downloadAndRenamePdfs(sourceKey);
+    }
+  } else {
+    await downloadAndRenamePdfs(sourceArg);
+  }
+
+  console.log('\nDone!');
+}
+
+main().catch(error => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});
