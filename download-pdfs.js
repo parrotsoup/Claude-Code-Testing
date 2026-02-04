@@ -10,11 +10,13 @@ const SOURCES = {
     name: 'JP Morgan',
     url: 'https://www.jpmorganchase.com/ir/annual-report',
     description: 'JP Morgan Chase annual reports',
+    renameToFirstLine: true,
   },
   globalfoundries: {
     name: 'GlobalFoundries',
     url: 'https://investors.gf.com/news-releases/presentations',
     description: 'GlobalFoundries investor presentations',
+    renameToFirstLine: false,
   },
 };
 
@@ -291,7 +293,18 @@ async function downloadAndRenamePdfs(sourceKey) {
   const allPdfs = getPdfFiles(CONFIG.downloadDir);
   const newPdfs = allPdfs.filter(p => !existingPdfs.has(p));
 
-  console.log(`Processing ${newPdfs.length} new PDF files...\n`);
+  console.log(`Downloaded ${newPdfs.length} new PDF files.\n`);
+
+  // Skip renaming if source doesn't require it
+  if (!source.renameToFirstLine) {
+    console.log(`Keeping original filenames for ${source.name}.\n`);
+    for (const pdfPath of newPdfs) {
+      console.log(`  - ${path.basename(pdfPath)}`);
+    }
+    return;
+  }
+
+  console.log('Renaming PDFs based on first line...\n');
 
   const results = [];
 
